@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOLF LABS // The Access Economy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Variáveis de cor Cyber-Tech */
+        :root {
+            --bg-base: #05050a;
+            --bg-elevated: #0a0a14;
+            --bg-highlight: #111122;
+            --alert-cyan: #00e5ff;
+            --alert-cyan-hover: #33eeff;
+            --text-main: #FFFFFF;
+            --text-muted: #9ca3af;
+            --error-pink: #ff007f;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Padrão de grelha digital futurista */
+            background-image: 
+                linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .tech-font { font-family: 'JetBrains Mono', monospace; }
+        .cyan-glow { color: var(--alert-cyan); text-shadow: 0 0 15px rgba(0, 229, 255, 0.6); }
+
+        /* Painéis HUD com efeito de vidro */
+        .hud-panel {
+            background: rgba(10, 10, 20, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 6px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 229, 255, 0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Cantos do HUD */
+        .hud-corner {
+            position: absolute; width: 15px; height: 15px; border-color: var(--alert-cyan); border-style: solid;
+        }
+        .hud-corner.tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
+        .hud-corner.tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
+        .hud-corner.bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+        .hud-corner.br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+        /* Elementos de Interacção */
+        .choice-btn {
+            background: rgba(17, 17, 34, 0.8);
+            border: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-main);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer; padding: 18px 24px; border-radius: 4px;
+            text-align: left; font-weight: 500; font-size: 1rem;
+            border-left: 3px solid transparent;
+        }
+        .choice-btn:hover:not(.disabled) { background: #1a1a2e; transform: translateX(6px); border-left-color: rgba(0, 229, 255, 0.5); }
+        .choice-btn.selected { background: rgba(0, 229, 255, 0.1); border-color: var(--alert-cyan); border-left-color: var(--alert-cyan); color: white; box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.1); }
+
+        .bug-word {
+            display: inline-block; padding: 6px 12px; margin: 4px;
+            border-radius: 4px; cursor: pointer; transition: all 0.2s;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+            font-weight: 600;
+        }
+        .bug-word:hover { background: rgba(255,255,255,0.1); }
+        .bug-word.selected { background: rgba(255, 0, 127, 0.15); color: var(--error-pink); border: 1px solid var(--error-pink); box-shadow: 0 0 10px rgba(255, 0, 127, 0.3); }
+
+        .link-node {
+            background: rgba(17, 17, 34, 0.8); border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 20px; border-radius: 4px; cursor: pointer;
+            transition: 0.2s; font-size: 0.95rem; color: var(--text-main); font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .link-node:hover { background: #1a1a2e; transform: translateY(-2px); border-color: rgba(0, 229, 255, 0.5); }
+        .link-node.selected { background: var(--alert-cyan); color: #000; border-color: var(--alert-cyan); }
+
+        /* Botão Selector Integrado (Inline) */
+        .inline-btn {
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px dashed var(--alert-cyan);
+            color: var(--alert-cyan);
+            padding: 4px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            display: inline-flex;
+            min-width: 90px;
+            justify-content: center;
+        }
+        .inline-btn:hover { background: rgba(0, 229, 255, 0.15); }
+        .inline-btn.active { background: var(--alert-cyan); color: #000; border-style: solid; box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+
+        /* Botão Principal */
+        .primary-btn {
+            background-color: var(--alert-cyan);
+            color: #000;
+            border-radius: 4px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+        .primary-btn:hover {
+            background-color: var(--alert-cyan-hover);
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.5);
+        }
+
+        /* Barra de Progresso e Efeitos */
+        .progress-fill { background: linear-gradient(90deg, #0055ff, var(--alert-cyan)); height: 100%; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
+
+        .hide { display: none !important; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .statement-card {
+            background: linear-gradient(90deg, rgba(0, 229, 255, 0.1) 0%, transparent 100%);
+            border-left: 3px solid var(--alert-cyan);
+            padding: 15px 20px; border-radius: 0 4px 4px 0; margin-top: 20px; text-align: left;
+        }
+
+        .ticker-wrap {
+            width: 100%; overflow: hidden; background-color: #000; padding: 6px 0; border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+        }
+        .ticker {
+            display: inline-block; white-space: nowrap; animation: ticker 30s linear infinite; font-size: 0.65rem; color: var(--alert-cyan);
+        }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* Barra de rolagem personalizada */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: #1a1a2e; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--alert-cyan); }
+    </style>
+</head>
+<body class="flex flex-col items-center">
+
+    <!-- Fita de Notícias (Ticker) -->
+    <div class="ticker-wrap tech-font uppercase tracking-widest fixed top-0 z-50">
+        <div class="ticker">
+            MARKET ALERT: CAR SUBSCRIPTIONS RISE 50% /// GEN Z PREFERS ACCESS OVER ASSETS /// HOME OWNERSHIP BECOMES A LUXURY FOR YOUNG ADULTS /// DIGITAL NOMADS REDEFINE LIVING STANDARDS /// THE SHARING ECONOMY EXPANDS INTO FURNITURE AND CLOTHING ///
+        </div>
+    </div>
+
+    <!-- Cabeçalho -->
+    <header class="max-w-6xl mx-auto w-full flex justify-between items-center mt-14 mb-8 pb-6 relative z-10 border-b border-gray-800 px-4 md:px-8">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-cyan-950 rounded flex items-center justify-center border border-cyan-900 shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+                <span class="text-2xl text-cyan-400"><i class="fa-solid fa-cloud"></i></span>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black uppercase tracking-tight text-white">WOLF <span class="cyan-glow">LABS</span></h1>
+                <p class="text-[0.65rem] tech-font text-gray-400 uppercase tracking-widest mt-1">Node B1 • Future Forms & Sharing Economy</p>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-[0.65rem] tech-font text-gray-400 uppercase tracking-widest mb-1">Prediction Accuracy</div>
+            <div class="text-2xl font-bold tech-font text-white" id="accuracy-display">0%</div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full flex-grow flex flex-col relative z-10 px-4 md:px-8">
+        
+        <!-- Navegação -->
+        <div class="flex gap-4 mb-8 overflow-x-auto pb-2 tech-font">
+            <button onclick="changeNode('lab')" id="tab-lab" class="bg-transparent border border-cyan-900 text-cyan-400 font-bold px-6 py-2 rounded text-xs uppercase tracking-widest hover:bg-cyan-950 transition">01. Future Simulator</button>
+            <button onclick="changeNode('dilemma')" id="tab-dilemma" class="bg-transparent border border-gray-800 text-gray-500 font-bold px-6 py-2 rounded text-xs uppercase tracking-widest hover:bg-gray-900 transition">02. Economy Debates</button>
+            <button onclick="changeNode('vault')" id="tab-vault" class="bg-transparent border border-gray-800 text-gray-500 font-bold px-6 py-2 rounded text-xs uppercase tracking-widest hover:bg-gray-900 transition">03. Digital Vault</button>
+        </div>
+
+        <!-- Secção: Gramática (Future Forms) -->
+        <div id="section-lab" class="hud-panel p-6 md:p-12 fade-in">
+            <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+
+            <div class="flex justify-between items-end mb-6 border-b border-gray-800 pb-4">
+                <div class="text-[0.75rem] tech-font text-white uppercase tracking-widest font-bold flex items-center gap-2" id="ex-counter">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SCENARIO 01/20
+                </div>
+                <div class="text-[0.65rem] tech-font text-cyan-300 uppercase tracking-widest bg-cyan-950/50 border border-cyan-900 px-3 py-1 rounded" id="ex-mode">
+                    PROTOCOL: LOADING...
+                </div>
+            </div>
+
+            <div class="w-full h-1 bg-gray-900 mb-10 rounded overflow-hidden">
+                <div id="progress-bar" class="progress-fill" style="width: 5%"></div>
+            </div>
+
+            <div id="lab-container" class="min-h-[350px] flex flex-col justify-center items-center relative">
+                <!-- Overlay de Sucesso -->
+                <div id="success-overlay" class="hide absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-20 rounded">
+                    <div class="bg-cyan-500 text-black font-black py-3 px-10 rounded text-sm uppercase tracking-widest shadow-[0_0_30px_rgba(0,229,255,0.6)] scale-110 transition-transform flex items-center gap-3">
+                        <i class="fa-solid fa-bolt"></i> PREDICTION VALIDATED
+                    </div>
+                </div>
+                <div id="lab-content" class="w-full text-center"></div>
+            </div>
+
+            <div class="mt-10 flex flex-col md:flex-row justify-between items-center gap-6 pt-6 border-t border-gray-800">
+                <div id="undo-hint" class="text-[0.65rem] tech-font text-gray-500 uppercase opacity-0 transition-opacity">
+                    > Click again to unselect
+                </div>
+                <div class="flex gap-4 w-full md:w-auto">
+                    <button id="verify-btn" class="hide w-full md:w-auto primary-btn py-3 px-10 uppercase text-xs tech-font">Verify Syntax</button>
+                    <button id="next-btn" onclick="nextExercise()" class="hide w-full md:w-auto bg-transparent border border-gray-600 text-white font-bold py-3 px-10 rounded uppercase text-xs hover:border-white transition tech-font">Next Scenario ></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secção: Dilemas da Economia de Acesso -->
+        <div id="section-dilemma" class="hide hud-panel p-8 md:p-12 fade-in">
+            <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-black mb-2 uppercase text-white tracking-tight">Access <span class="cyan-glow">Debates</span></h2>
+                <p class="text-xs text-gray-400 uppercase tracking-widest tech-font">The End of Ownership?</p>
+            </div>
+            <div id="dilemma-list" class="space-y-6 max-w-3xl mx-auto"></div>
+        </div>
+
+        <!-- Secção: Cofre Digital (Entrevistas/Speeches) -->
+        <div id="section-vault" class="hide hud-panel p-8 md:p-12 fade-in">
+            <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-black mb-2 uppercase text-white tracking-tight">Digital <span class="cyan-glow">Vault</span></h2>
+                <p class="text-xs text-gray-400 uppercase tracking-widest tech-font">Future Forecast Records</p>
+            </div>
+            <div id="vault-list" class="space-y-4 max-w-3xl mx-auto"></div>
+        </div>
+
+    </main>
+
+    <footer class="max-w-6xl mx-auto w-full text-center mt-12 mb-8 opacity-50">
+        <p class="text-[0.6rem] tech-font uppercase tracking-widest text-gray-400">Wolf Labs // B1 Future Forms Engine // The Access Economy Module</p>
+    </footer>
+
+    <script>
+        // BASE DE DADOS: B1 Future Forms (Will, Going to, Future Continuous) - Inglês
+        const exercises = [
+            { 
+                id: 1, 
+                type: 'inline', 
+                q: "FUTURE PREDICTION: Based on strong current evidence (housing prices are extremely high), what is the correct future form?", 
+                parts: ["Look at these housing prices. Young people ", " afford to buy homes anytime soon."],
+                options: ["won't", "aren't going to", "won't be"], 
+                a: 1, // 'aren't going to' (prediction with evidence)
+                starter: "Because houses are so expensive, people are going to...",
+                feedback: "Correct! We use 'Going to' for predictions when we have clear evidence in the present (the high prices)."
+            },
+            { 
+                id: 2, 
+                type: 'choice', 
+                q: "SPONTANEOUS DECISION: You just realized you need a car for a quick trip. Which form do you use?", 
+                options: ["I'm going to rent a car for the weekend.", "I will rent a car for the weekend.", "I will be renting a car for the weekend."], 
+                a: 1, // 'will' (spontaneous)
+                starter: "If I ever need a car fast, I will...",
+                feedback: "Spot on! 'Will' is used for spontaneous decisions made at the moment of speaking."
+            },
+            { 
+                id: 3, 
+                type: 'hunt', 
+                q: "BUG DETECTOR: Find the incorrect verb form in this planned action.", 
+                sentence: ["I", "already", "decided.", "I", "will", "subscribe", "to", "the", "car-sharing", "service", "next", "month."], 
+                a: 4, // 'will' -> 'am going to' (because it's already decided)
+                starter: "Next month, my plan is that I am going to...",
+                feedback: "Bug detected! If the decision was ALREADY made before speaking (a plan), we must use 'going to', not 'will'."
+            },
+            { 
+                id: 4, 
+                type: 'link', 
+                q: "SYNTAX BUILDER: Construct a sentence using the Future Continuous (Ongoing action at a specific time).", 
+                nodes: [["By"], ["2030,"], ["we"], ["will"], ["be"], ["renting"], ["our"], ["clothes."]], 
+                a: ["By", "2030,", "we", "will", "be", "renting", "our", "clothes."],
+                starter: "In the future, I think society will be...",
+                feedback: "Perfect syntax. 'Will be + verb(ing)' describes an action that will be in progress at a certain time in the future."
+            },
+            { 
+                id: 5, 
+                type: 'inline', 
+                q: "PROMISE/OFFER: Your friend's streaming subscription expired.", 
+                parts: ["Don't worry about the movie. I ", " pay for the access tonight."],
+                options: ["am going to", "will", "will be"], 
+                a: 1, // 'will' (promise/offer)
+                starter: "When my friends need help, I will...",
+                feedback: "Correct! We use 'Will' for promises, offers, and immediate reactions."
+            },
+            { 
+                id: 6, 
+                type: 'choice', 
+                q: "FUTURE CONTINUOUS: Focus on the ongoing action at a specific future time.", 
+                options: ["This time next year, I will work as a digital nomad.", "This time next year, I am going to work as a digital nomad.", "This time next year, I will be working as a digital nomad."], 
+                a: 2,
+                starter: "This time next year, I will be...",
+                feedback: "Exactly. 'This time next year' is a specific point in the future, so we use the Future Continuous (will be working) to show the action in progress."
+            },
+            { 
+                id: 7, 
+                type: 'hunt', 
+                q: "BUG DETECTOR: Spot the structural error in the Future Continuous sentence.", 
+                sentence: ["In", "ten", "years,", "nobody", "will", "buying", "DVDs", "or", "CDs."], 
+                a: 5, // 'buying' -> needs 'be' before it, or should be 'buy' if simple future
+                starter: "In ten years, consumers will be...",
+                feedback: "Syntax error! You cannot use 'will + verb(ing)' directly. You need the verb 'to be': 'will BE buying'."
+            },
+            { 
+                id: 8, 
+                type: 'link', 
+                q: "SYNTAX BUILDER: An evidence-based prediction about the sharing economy.", 
+                nodes: [["The"], ["sharing"], ["economy"], ["is"], ["going"], ["to"], ["grow"], ["fast."]], 
+                a: ["The", "sharing", "economy", "is", "going", "to", "grow", "fast."],
+                starter: "Looking at the trends, the sharing economy is going to...",
+                feedback: "Structure validated. 'Is going to' fits perfectly for predictions based on current economic trends."
+            },
+            { 
+                id: 9, 
+                type: 'inline', 
+                q: "FUTURE FACT: Something that will happen regardless of our plans.", 
+                parts: ["The new subscription tax ", " begin on January 1st."],
+                options: ["is going to", "will", "will be"], 
+                a: 1, // 'will' (future fact/timetable)
+                starter: "The government announced that the new law will...",
+                feedback: "Correct. We use 'Will' for inevitable future facts or official announcements."
+            },
+            { 
+                id: 10, 
+                type: 'choice', 
+                q: "PLANNED ACTION: You bought the ticket to a digital nomad conference.", 
+                options: ["I will fly to Bali next week for the conference.", "I am going to fly to Bali next week for the conference.", "I will be fly to Bali next week for the conference."], 
+                a: 1,
+                starter: "Next week, I am going to...",
+                feedback: "Good! Because you already bought the ticket, it is a firm plan. 'Going to' (or Present Continuous) is the right choice."
+            },
+            { 
+                id: 11, 
+                type: 'hunt', 
+                q: "BUG DETECTOR: Find the mistake in this Future Continuous form.", 
+                sentence: ["At", "8 PM", "tonight,", "I", "will", "be", "use", "my", "virtual", "reality", "headset."], 
+                a: 6, // 'use' -> 'using'
+                starter: "Tonight at 8 PM, I will be...",
+                feedback: "Missing gerund! The Future Continuous requires the main verb to end in '-ing' (will be using)."
+            },
+            { 
+                id: 12, 
+                type: 'link', 
+                q: "SYNTAX BUILDER: A personal prediction without solid evidence (just your belief).", 
+                nodes: [["I"], ["think"], ["people"], ["will"], ["prefer"], ["access"], ["over"], ["ownership."]], 
+                a: ["I", "think", "people", "will", "prefer", "access", "over", "ownership."],
+                starter: "In my opinion, I think people will...",
+                feedback: "Correct. For personal beliefs, opinions, or guesses (often with 'I think'), we use 'Will'."
+            },
+            { 
+                id: 13, 
+                type: 'inline', 
+                q: "ROUTINE IN THE FUTURE: Asking about someone's future ongoing activity politely.", 
+                parts: ["", " using the shared workspace tomorrow afternoon?"],
+                options: ["Will you", "Are you going to", "Will you be"], 
+                a: 2, // 'Will you be'
+                starter: "Excuse me, will you be...",
+                feedback: "Yes! 'Will you be + verb(ing)' is a very polite and common way to ask about someone's plans without sounding like you are ordering them."
+            },
+            { 
+                id: 14, 
+                type: 'choice', 
+                q: "EVIDENCE PREDICTION: The sky is completely dark and you are standing outside.", 
+                options: ["It will rain soon.", "It is going to rain soon.", "It will be raining soon."], 
+                a: 1,
+                feedback: "Exactly! The dark sky is present evidence, so 'going to' is the natural choice for the prediction."
+            },
+            { 
+                id: 15, 
+                type: 'hunt', 
+                q: "BUG DETECTOR: Find the error in this spontaneous decision.", 
+                sentence: ["My", "laptop", "just", "broke.", "I", "am", "going", "to", "rent", "one", "online", "now."], 
+                a: 5, // 'am' -> 'will' (or 'am going to rent' -> 'will rent')
+                feedback: "Because the laptop JUST broke, the decision to rent one is spontaneous. You should use 'will rent' instead of 'am going to rent'."
+            },
+            { 
+                id: 16, 
+                type: 'link', 
+                q: "SYNTAX BUILDER: The shift to the access economy.", 
+                nodes: [["Soon,"], ["we"], ["won't"], ["own"], ["our"], ["digital"], ["files."]], 
+                a: ["Soon,", "we", "won't", "own", "our", "digital", "files."],
+                feedback: "Valid prediction. 'Won't' is the negative form of 'will'."
+            },
+            { 
+                id: 17, 
+                type: 'inline', 
+                q: "FUTURE CONTINUOUS: Describe a long-term process happening in the future.", 
+                parts: ["Over the next decade, companies ", " shifting to subscription models."],
+                options: ["will", "are going to", "will be"], 
+                a: 2, // 'will be'
+                feedback: "Correct! It emphasizes that the action (shifting) will be ongoing over that period of time."
+            },
+            { 
+                id: 18, 
+                type: 'choice', 
+                q: "INTENTION: Expressing a firm personal intention about lifestyle.", 
+                options: ["I will live off the grid next year.", "I am going to live off the grid next year.", "I will be live off the grid next year."], 
+                a: 1,
+                feedback: "Great! 'Going to' is best for expressing firm intentions and prior plans."
+            },
+            { 
+                id: 19, 
+                type: 'hunt', 
+                q: "BUG DETECTOR: Spot the mistake in asking for a promise.", 
+                sentence: ["Are", "you", "going", "to", "promise", "to", "cancel", "that", "expensive", "subscription?"], 
+                a: 0, // 'Are you going to' -> 'Will you'
+                feedback: "When asking for a promise or a favor, we use 'Will you...?', not 'Are you going to...?'."
+            },
+            { 
+                id: 20, 
+                type: 'link', 
+                q: "SYNTAX BUILDER: Final ongoing prediction.", 
+                nodes: [["They"], ["will"], ["be"], ["living"], ["in"], ["a"], ["co-living"], ["space."]], 
+                a: ["They", "will", "be", "living", "in", "a", "co-living", "space."],
+                feedback: "Perfect! You have mastered the Future Continuous structure."
+            }
+        ];
+
+        // Debates: A Economia de Acesso (Dilemas)
+        const dilemmas = [
+            { title: "THE SUBSCRIPTION TRAP", q: "You own nothing, but you have access to everything. You pay monthly for your car, your software, your music, and even your furniture. Is the 'Subscription Economy' the ultimate freedom from responsibility, or a trap to keep the middle class poor?", starters: ["I think the subscription model will ultimately...", "If we don't own our assets, we are going to..."] },
+            { title: "THE END OF REAL ESTATE", q: "With housing prices rising 121% and incomes only rising 29%, many Gen Z adults accept they will never buy a house. They prefer 'Co-living' spaces and digital nomadism. Should governments intervene, or is this just the natural evolution of society?", starters: ["Looking at the evidence, the housing market is going to...", "In the future, young people will be living in..."] },
+            { title: "DIGITAL OWNERSHIP ILLUSION", q: "When you 'buy' a movie on Apple TV or Amazon, you are actually just buying a long-term license. If the platform shuts down, your movie disappears. Does digital ownership actually exist, or is everything just a rental?", starters: ["I believe that in 10 years, companies will be...", "Because of these rules, I am going to start..."] }
+        ];
+
+        // Cofre Digital (Tópicos de Conversação)
+        const vaultQuestions = [
+            { q: "Predict how your daily transportation will look in 20 years. Use Future Continuous.", s: "In 20 years, I believe I will be traveling by..." },
+            { q: "What is something you planned to buy, but changed your mind about? Use 'Going to'.", s: "I was going to buy a [item], but now my plan is..." },
+            { q: "Make a spontaneous promise about your digital habits right now. Use 'Will'.", s: "I promise I will stop wasting time on..." },
+            { q: "Look at the current economy. Make a prediction based on evidence.", s: "Because everything is so expensive, people are going to..." }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+        let selectedIndices = [];
+        let selectedBug = null;
+        let selectedChoice = null;
+
+        const labContent = document.getElementById('lab-content');
+        const verifyBtn = document.getElementById('verify-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const accuracyText = document.getElementById('accuracy-display');
+        const undoHint = document.getElementById('undo-hint');
+        const successOverlay = document.getElementById('success-overlay');
+
+        function init() {
+            renderExercise();
+            renderVault();
+            renderDilemmas();
+            changeNode('lab');
+        }
+
+        // Função utilitária para baralhar arrays
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function renderExercise() {
+            const ex = exercises[currentIdx];
+            if (!labContent) return;
+            labContent.innerHTML = '';
+            verifyBtn.classList.add('hide');
+            nextBtn.classList.add('hide');
+            undoHint.classList.add('opacity-0');
+            successOverlay.classList.add('hide');
+            
+            selectedIndices = [];
+            selectedBug = null;
+            selectedChoice = null;
+
+            document.getElementById('ex-counter').innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SCENARIO ${String(ex.id).padStart(2, '0')}/20`;
+            
+            let modeName = "MULTIPLE CHOICE";
+            if(ex.type === 'hunt') modeName = "BUG DETECTOR";
+            if(ex.type === 'link') modeName = "SYNTAX BUILDER";
+            if(ex.type === 'inline') modeName = "INLINE SELECTOR";
+            document.getElementById('ex-mode').innerText = `PROTOCOL: ${modeName}`;
+            
+            progressBar.style.width = `${(currentIdx / 20) * 100}%`;
+
+            let html = `<h2 class="text-lg md:text-xl font-bold mb-8 text-white max-w-2xl mx-auto leading-relaxed whitespace-pre-line">${ex.q}</h2>`;
+
+            // Lógica para renderizar o Selector Integrado (Inline)
+            if(ex.type === 'inline') {
+                html += `<div class="text-xl md:text-2xl font-bold leading-loose mt-4 bg-black/40 p-6 rounded border border-gray-800 shadow-inner max-w-2xl mx-auto text-white flex flex-wrap items-center justify-center gap-2">
+                    <span>${ex.parts[0]}</span>
+                    <button id="inline-btn" class="inline-btn" data-idx="-1" onclick="cycleInline(this)">[...]</button>
+                    <span>${ex.parts[1]}</span>
+                </div>`;
+            } else if(ex.type === 'choice') {
+                let shuffledOptions = ex.options.map((opt, i) => ({ text: opt, originalIdx: i }));
+                shuffle(shuffledOptions);
+                html += `<div class="grid grid-cols-1 gap-3 w-full max-w-xl mx-auto">`;
+                shuffledOptions.forEach((optObj) => {
+                    html += `<button onclick="handleChoice(${optObj.originalIdx}, this)" class="choice-btn">${optObj.text}</button>`;
+                });
+                html += `</div>`;
+            } else if(ex.type === 'hunt') {
+                html += `<div class="text-xl font-bold leading-loose mt-4 bg-black/40 p-6 rounded border border-gray-800 shadow-inner max-w-2xl mx-auto">`;
+                ex.sentence.forEach((word, i) => {
+                    html += `<span onclick="handleBug(${i}, this)" class="bug-word">${word}</span>`;
+                });
+                html += `</div>`;
+            } else if(ex.type === 'link') {
+                html += `<div class="flex flex-wrap justify-center gap-3 w-full mt-4 bg-black/40 p-8 rounded border border-gray-800 max-w-3xl mx-auto">`;
+                ex.nodes.forEach((group, gIdx) => {
+                    let shuffledGroup = group.map((node, i) => ({ text: node, originalIdx: i }));
+                    shuffle(shuffledGroup);
+                    html += `<div class="flex flex-col gap-2">`;
+                    shuffledGroup.forEach((nodeObj) => {
+                        html += `<div onclick="handleLink(${gIdx}, ${nodeObj.originalIdx}, this)" class="link-node">${nodeObj.text}</div>`;
+                    });
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            }
+
+            labContent.innerHTML = html;
+        }
+
+        // Ciclagem de opções para o botão Inline
+        function cycleInline(el) {
+            const ex = exercises[currentIdx];
+            let idx = parseInt(el.getAttribute('data-idx'));
+            idx = (idx + 1) % ex.options.length;
+            el.setAttribute('data-idx', idx);
+            el.innerText = ex.options[idx];
+            el.classList.add('active');
+            selectedChoice = idx;
+            verifyBtn.classList.remove('hide');
+            verifyBtn.onclick = verifyInline;
+            undoHint.classList.remove('opacity-0');
+        }
+
+        // Lidar com selecção Múltipla Escolha
+        function handleChoice(i, el) {
+            const all = document.querySelectorAll('.choice-btn');
+            if(selectedChoice === i) {
+                selectedChoice = null; el.classList.remove('selected'); verifyBtn.classList.add('hide'); undoHint.classList.add('opacity-0');
+            } else {
+                all.forEach(e => e.classList.remove('selected')); el.classList.add('selected'); selectedChoice = i;
+                verifyBtn.classList.remove('hide'); verifyBtn.onclick = verifyChoice; undoHint.classList.remove('opacity-0');
+            }
+        }
+
+        // Lidar com selecção Bug Detector
+        function handleBug(i, el) {
+            const all = document.querySelectorAll('.bug-word');
+            if(selectedBug === i) {
+                selectedBug = null; el.classList.remove('selected'); verifyBtn.classList.add('hide'); undoHint.classList.add('opacity-0');
+            } else {
+                all.forEach(e => e.classList.remove('selected')); el.classList.add('selected'); selectedBug = i;
+                verifyBtn.classList.remove('hide'); verifyBtn.onclick = verifyBug; undoHint.classList.remove('opacity-0');
+            }
+        }
+
+        // Lidar com selecção Syntax Builder
+        function handleLink(gIdx, originalIdx, el) {
+            const groupEls = el.parentElement.querySelectorAll('.link-node');
+            if(selectedIndices[gIdx] === originalIdx) {
+                el.classList.remove('selected'); selectedIndices[gIdx] = undefined;
+            } else {
+                groupEls.forEach(e => e.classList.remove('selected')); el.classList.add('selected'); selectedIndices[gIdx] = originalIdx;
+            }
+            const allSet = selectedIndices.filter(x => x !== undefined).length === exercises[currentIdx].nodes.length;
+            verifyBtn.classList.toggle('hide', !allSet);
+            undoHint.classList.toggle('opacity-0', !selectedIndices.some(x => x !== undefined));
+            if(allSet) verifyBtn.onclick = verifyLink;
+        }
+
+        // Funções de verificação
+        function verifyInline() { finishEx(selectedChoice === exercises[currentIdx].a); }
+        function verifyChoice() { finishEx(selectedChoice === exercises[currentIdx].a); }
+        function verifyBug() { finishEx(selectedBug === exercises[currentIdx].a); }
+        function verifyLink() {
+            const ex = exercises[currentIdx];
+            const isCorrect = selectedIndices.every((val, i) => val === ex.nodes[i].indexOf(ex.a[i]));
+            finishEx(isCorrect);
+        }
+
+        // Finalizar exercício e mostrar feedback
+        function finishEx(isCorrect) {
+            verifyBtn.classList.add('hide');
+            undoHint.classList.add('opacity-0');
+            const ex = exercises[currentIdx];
+
+            if(isCorrect) {
+                triggerSuccess();
+                updateAccuracy(1);
+                let feedbackHtml = `
+                    <div class="mt-8 fade-in text-left max-w-2xl mx-auto">
+                        <div class="bg-gray-900/80 border-l-4 border-cyan-500 p-4 rounded">
+                            <span class="text-[0.65rem] font-bold text-cyan-400 uppercase tracking-widest block mb-2 tech-font">System Analysis:</span>
+                            <p class="text-sm text-gray-300">${ex.feedback || 'Future projection valid. Grammar structure correct.'}</p>
+                        </div>
+                `;
+                if(ex.starter) {
+                    feedbackHtml += `
+                        <div class="statement-card">
+                            <span class="text-[0.6rem] font-bold text-white uppercase tracking-widest block mb-2 tech-font">Speaking Starter:</span>
+                            <p class="text-sm italic text-gray-400">"> ${ex.starter}"</p>
+                        </div>
+                    `;
+                }
+                feedbackHtml += `</div>`;
+                labContent.innerHTML += feedbackHtml;
+            } else {
+                const labPanel = document.getElementById('section-lab');
+                labPanel.style.border = "1px solid #ff007f"; 
+                setTimeout(() => labPanel.style.border = "1px solid rgba(0, 229, 255, 0.2)", 1000);
+            }
+            nextBtn.classList.remove('hide');
+        }
+
+        // Animação de sucesso
+        function triggerSuccess() {
+            successOverlay.classList.remove('hide');
+            setTimeout(() => successOverlay.classList.add('hide'), 800);
+        }
+
+        // Actualizar pontuação
+        function updateAccuracy(pts) { score += pts; accuracyText.innerText = `${Math.round((score / 20) * 100)}%`; }
+
+        // Avançar para o próximo
+        function nextExercise() {
+            currentIdx++;
+            if(currentIdx < exercises.length) renderExercise();
+            else finishLab();
+        }
+
+        // Fim do Laboratório
+        function finishLab() {
+            labContent.innerHTML = `
+                <div class="text-center py-12 fade-in">
+                    <h1 class="text-5xl font-black text-white mb-6 uppercase tracking-tighter">FUTURE <span class="text-cyan-400">UNLOCKED</span></h1>
+                    <p class="text-gray-400 mb-10 max-w-md mx-auto text-sm leading-relaxed">Mission accomplished. You have mastered <strong>Future Forms</strong> (Will, Going to, Future Continuous). You are ready to debate the future of the sharing economy.</p>
+                    <button onclick="changeNode('dilemma')" class="primary-btn py-4 px-12 text-sm tech-font">Enter Debate Arena</button>
+                </div>`;
+            progressBar.style.width = "100%";
+        }
+
+        // Renderizar Dilemas
+        function renderDilemmas() {
+            const container = document.getElementById('dilemma-list');
+            if (!container) return;
+            dilemmas.forEach((d, i) => {
+                const div = document.createElement('div');
+                div.className = 'bg-gray-900/50 hover:bg-gray-900 transition border border-gray-800 p-8 rounded fade-in';
+                div.innerHTML = `
+                    <div class="flex items-center gap-4 mb-5">
+                        <span class="bg-cyan-950 text-cyan-400 border border-cyan-900 tech-font font-bold px-3 py-1 text-[0.65rem] rounded uppercase tracking-widest">DILEMMA 0${i+1}</span>
+                        <h3 class="text-xl font-bold text-white uppercase">${d.title}</h3>
+                    </div>
+                    <p class="text-gray-300 mb-6 text-sm leading-relaxed">${d.q}</p>
+                    <div class="bg-black/40 p-5 rounded border border-white/5">
+                        <span class="text-[0.65rem] text-gray-500 uppercase tracking-widest block mb-3 font-bold tech-font">Speaking Toolkit:</span>
+                        <ul class="text-sm text-gray-400 italic space-y-3">
+                            ${d.starters.map(s => `<li><span class="text-cyan-400 font-bold mr-2">></span>${s}</li>`).join('')}
+                        </ul>
+                    </div>`;
+                container.appendChild(div);
+            });
+        }
+
+        // Renderizar o Cofre Digital
+        function renderVault() {
+            const list = document.getElementById('vault-list');
+            if (!list) return;
+            vaultQuestions.forEach((v, i) => {
+                const item = document.createElement('div');
+                item.className = 'bg-gray-900/50 p-6 rounded fade-in flex flex-col md:flex-row gap-6 items-start md:items-center hover:bg-gray-900 transition border border-gray-800';
+                item.style.animationDelay = `${i * 0.05}s`;
+                item.innerHTML = `
+                    <div class="w-12 h-12 bg-black rounded border border-gray-700 flex items-center justify-center flex-shrink-0 text-white shadow-inner">
+                        <i class="fa-solid fa-microphone text-cyan-400"></i>
+                    </div>
+                    <div class="flex-grow">
+                        <p class="text-white font-bold mb-2 text-sm">${v.q}</p>
+                        <p class="text-xs text-gray-500 tech-font">Guide: <span class="italic text-gray-400">"${v.s}"</span></p>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Alternar entre separadores
+        function changeNode(mode) {
+            document.querySelectorAll('.hud-panel').forEach(p => p.classList.add('hide'));
+            document.querySelectorAll('button[id^="tab-"]').forEach(b => {
+                b.classList.remove('border-cyan-900', 'text-cyan-400');
+                b.classList.add('border-gray-800', 'text-gray-500');
+            });
+            const targetSection = document.getElementById(`section-${mode}`);
+            const targetTab = document.getElementById(`tab-${mode}`);
+            if (targetSection) targetSection.classList.remove('hide');
+            if (targetTab) {
+                targetTab.classList.remove('border-gray-800', 'text-gray-500');
+                targetTab.classList.add('border-cyan-900', 'text-cyan-400');
+            }
+        }
+
+        // Iniciar App
+        window.onload = init;
+    </script>
+</body>
+</html>
